@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+}
+body{
+    background-color: rgb(209, 243, 243);
+    width: 100%;
+}
+
+.chat{
+width: 600px;
+border: 2px solid red;
+height: 80vh;
+overflow: auto; 
+margin:auto;
+background: #5cbad1fb;
+text-align: center;
+position: relative;
+border-radius: 20px;
+}
+input{
+    width: 600px;
+    height: 30px;
+    display: block;
+    margin: auto;
+    border-radius: 20px;
+    text-align: center;
+    border: none;
+        
+}
+.massage{
+    width: 200px;
+    border-radius: 40px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+.massage h4{
+    text-align: left;
+    margin-left: 10px;
+}
+    </style>
+</head>
+<body>    
+    <h1><center>Chatting app</center></h1>
+    <div class="chat">
+        <div id="append"></div>
+        
+    </div>
+    <input type="text" id="input" placeholder="enter your massage">
+    
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket=io()
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('id');
+    console.log(name)
+    let msg=document.getElementById("input")
+    msg.addEventListener('keyup',(e)=>{
+        if(e.key=="Enter"){
+            sendMassage(e.target.value)
+        }
+    })
+
+    function sendMassage(msg){
+        let massage={
+            user:name,
+            mass:msg.trim()
+        }
+        console.log(massage)
+
+        appendmassage(massage)
+
+        socket.emit("massage",massage)
+    }
+
+    function appendmassage(massage){
+        let div=document.getElementById("append")
+        let card=document.createElement("div")
+        card.setAttribute("class","massage")
+        let markup=`
+        <h4>${massage.user}</h4>
+        <p>${massage.mass}</p>
+        `
+        card.innerHTML=markup
+        div.append(card)
+    }
+   
+    socket.on("massage",(msg)=>{
+        console.log(msg)
+        appendmassage(msg)
+    })
+
+
+</script>
+</html>
