@@ -44,7 +44,7 @@ let sendingmail=async(Name,Email,userid)=>{
             from: 'mr.rajeshkumar7678@gmail.com',
             to: Email,
             subject: 'For verifecation mail',
-            html:`<p>hi ${Name} <br> please click here to <a href="http://localhost:7678/user/verify?id=${userid}">verify</a>  your mail. </p>`
+            html:`<p>hi ${Name} <br> please click here to <a href="chitchat-x3mf.onrender.com/user/verify?id=${userid}">verify</a>  your mail. </p>`
         };
 
         transporter.sendMail(mailOptions, (error, info) => {

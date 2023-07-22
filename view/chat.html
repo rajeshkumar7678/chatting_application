@@ -6,56 +6,132 @@
     <title>Document</title>
     <style>
         *{
-    padding: 0px;
-    margin: 0px;
+    padding: 0;
+    margin: 0;
     box-sizing: border-box;
 }
 body{
-    background-color: rgb(209, 243, 243);
-    width: 100%;
+    display: flex;
+    justify-content:space-around ;
+    
+    gap: 20px;
+    min-height: 100vh;
+    background-color: rgb(175, 227, 243);
+}
+#users{
+    text-align: center;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    width: 300px;
 }
 
-.chat{
-width: 600px;
-border: 2px solid red;
-height: 80vh;
-overflow: auto; 
-margin:auto;
-background: #5cbad1fb;
-text-align: center;
-position: relative;
-border-radius: 20px;
-}
-input{
-    width: 600px;
-    height: 30px;
-    display: block;
-    margin: auto;
-    border-radius: 20px;
-    text-align: center;
-    border: none;
-        
-}
-.massage{
-    width: 200px;
-    border-radius: 40px;
+section.chat_app{
+    width: 800px;
+    max-width: 90%;
+    background-color: #9ae2c7;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    margin-top: 10px;
+}
+.brand{
+    padding: 20px;
+    background-color: azure;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand h1{
+    text-transform: uppercase;
+    font-size: 20px;
+    color:teal;
     margin-left: 10px;
 }
-.massage h4{
-    text-align: left;
-    margin-left: 10px;
+
+.msgarea{
+height: 500px;
+padding: 15px;
+display: flex;
+flex-direction: column;
+overflow-y: auto;
+padding-top: 40px;
+}
+#input{
+    width: 100%;
+    border:none;
+    padding: 20px;
+    font-size: 16px;
+    outline: none;
+}
+
+.msg{
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 40px;
+    max-width: 300px;
+    position: relative;
+}
+
+.incoming{
+    background-color: blueviolet;
+    color: white;
+}
+
+.outgoing{
+    background-color: blueviolet;
+    color: white;
+    margin-left: auto;
+
+}
+.msg h4{
+    position: absolute;
+    top:-20px;
+    left:0;
+    color: #333;
+    font-size: 14px;
+
+
+}
+#addeduser li{
+    color: green;
+    list-style-type: disc;
+}
+
+
+#logout{
+   color: white;
+   background-color: forestgreen;
+   padding: 10px;
+   border-radius: 5px;
+   font-weight:bold;
+   cursor: pointer;
 }
     </style>
 </head>
 <body>    
-    <h1><center>Chatting app</center></h1>
+    <div id="users">
+        <h1>Online users </h1>
+        <div id="addeduser"></div>
+    </div>
+    <section class="chat_app">
+    
+        <div class="brand">
+            <!-- <img src="" alt="" srcset=""> -->
+            <h1>chat application</h1>
+            <button id="logout">Leave</button>
+        </div>
+        <div class="msgarea">
+
+        </div>
+    <div>
+        <input type="text" id="input" placeholder="enter your massage">
+        
+    </div>
+    
+       </section>
+    <!-- <h1><center>Chatting app</center></h1>
     <div class="chat">
         <div id="append"></div>
         
     </div>
-    <input type="text" id="input" placeholder="enter your massage">
+    <input type="text" id="input" placeholder="enter your massage"> -->
     
 </body>
 <script src="/socket.io/socket.io.js"></script>
@@ -63,43 +139,64 @@ input{
     const socket=io()
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get('id');
+    let msgarea=document.querySelector(".msgarea")
     console.log(name)
     let msg=document.getElementById("input")
     msg.addEventListener('keyup',(e)=>{
         if(e.key=="Enter"){
-            sendMassage(e.target.value)
+            sendmsg(e.target.value)
         }
     })
 
-    function sendMassage(msg){
-        let massage={
-            user:name,
-            mass:msg.trim()
-        }
-        console.log(massage)
-
-        appendmassage(massage)
-
-        socket.emit("massage",massage)
+    function sendmsg(message){
+    let msg={
+        user:name,
+        message:message.trim()
     }
+    //append massage
+    appendmsg(msg,"outgoing")
+    msg.value=""
+// send msg to server
+    socket.emit("message",msg)
+}
 
-    function appendmassage(massage){
-        let div=document.getElementById("append")
-        let card=document.createElement("div")
-        card.setAttribute("class","massage")
-        let markup=`
-        <h4>${massage.user}</h4>
-        <p>${massage.mass}</p>
-        `
-        card.innerHTML=markup
-        div.append(card)
-    }
-   
-    socket.on("massage",(msg)=>{
-        console.log(msg)
-        appendmassage(msg)
-    })
+function appendmsg(msg,type){
+let maindiv=document.createElement("div")
+let classname=type
+maindiv.classList.add(classname, "msg")
+let markup=`
+<h4>${msg.user}</h4>
+<p>${msg.message}</p>
+`
+maindiv.innerHTML=markup
+msgarea.appendChild(maindiv)
+}
 
+// recive msg
+socket.on("message",(msg)=>{
+    //console.log(msg)
+    appendmsg(msg,"incoming")
+})
+
+//userlist
+let connectedUsers = [];
+
+socket.on("users", (users) => {
+      connectedUsers = users;
+      updateUsersList();
+});
+
+const updateUsersList = () => {
+      const userListElement = document.getElementById("addeduser");
+      userListElement.innerHTML = "";
+
+      connectedUsers.forEach((user) => {
+        const li = document.createElement("li");
+        li.textContent = user;
+        
+        userListElement.appendChild(li);
+    });
+};
 
 </script>
 </html>

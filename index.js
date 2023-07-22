@@ -8,13 +8,15 @@ const app=express()
 const http=require("http").createServer(app)
 
 const io=require("socket.io")(http)
-
+let users=[]
 io.on("connection",(socket)=>{
     console.log("connected")
-    socket.on("massage",(msg)=>{
-        console.log(msg)
-        socket.broadcast.emit("massage",msg)
+    socket.on("message",(msg)=>{
+        users.push(msg.user)
+        console.log(msg,users)
+        socket.broadcast.emit("message",msg)
     })
+    io.emit("users", users);
 })
 
 let port=process.env.port||7678
@@ -24,7 +26,7 @@ app.use(cors())
 
 
 app.get("/",(req,res)=>{
-    res.send("homr page")
+    res.send("home page")
 })
 
 app.use("/user",userroute)
@@ -38,7 +40,7 @@ http.listen(port,async()=>{
         await connect
         console.log("db connected")
     } catch (error) {
-        console.Log(error)
+        console.log(error)
     }
     console.log("server is running")
 })
