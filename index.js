@@ -1,47 +1,58 @@
-const express=require("express")
-const { connect } = require("./db")
-const { userroute } = require("./routes/userroute")
-const {socket}=require("socket.io")
-const cors=require("cors")
-require("dotenv").config()
-const app=express()
-const http=require("http").createServer(app)
+const express = require("express");
+const { connect } = require("./db");
+const { userroute } = require("./routes/userroute");
+const cors = require("cors");
+require("dotenv").config();
+const app = express();
+const http = require("http").createServer(app);
 
-const io=require("socket.io")(http)
-let users=[]
-io.on("connection",(socket)=>{
-    console.log("connected")
-    socket.on("message",(msg)=>{
-        users.push(msg.user)
-        console.log(msg,users)
-        socket.broadcast.emit("message",msg)
-    })
-    io.emit("users", users);
-})
+const io = require("socket.io")(http);
+let connectedUsers = [];
 
-let port=process.env.port||7678
-app.use(express.json())
-app.use(cors())
+io.on("connection", (socket) => {
+  console.log("connected");
 
+  socket.on("message", (msg) => {
+    socket.broadcast.emit("message", msg);
+  });
 
+  // Listen for user join
+  socket.on("user_join", (username) => {
+    connectedUsers.push(username);
+    console.log("User joined:", username);
+    io.emit("users", connectedUsers);
+  });
 
-app.get("/",(req,res)=>{
-    res.send("home page")
-})
-
-app.use("/user",userroute)
-
-
-
-
-
-http.listen(port,async()=>{
-    try {
-        await connect
-        console.log("db connected")
-    } catch (error) {
-        console.log(error)
+  // Listen for user disconnect
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+    const disconnectedUserIndex = connectedUsers.indexOf(socket.id);
+    if (disconnectedUserIndex !== -1) {
+      connectedUsers.splice(disconnectedUserIndex, 1);
+      console.log("User removed:", socket.id);
+      io.emit("users", connectedUsers);
     }
-    console.log("server is running")
-})
+  });
 
+  io.emit("users", connectedUsers);
+});
+
+let port = process.env.PORT || 7678;
+app.use(express.json());
+app.use(cors());
+
+app.get("/", (req, res) => {
+  res.send("home page");
+});
+
+app.use("/user", userroute);
+
+http.listen(port, async () => {
+  try {
+    await connect();
+    console.log("db connected");
+  } catch (error) {
+    console.log(error);
+  }
+  console.log("server is running");
+});

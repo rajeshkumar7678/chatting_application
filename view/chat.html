@@ -18,11 +18,7 @@ body{
     min-height: 100vh;
     background-color: rgb(175, 227, 243);
 }
-#users{
-    text-align: center;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    width: 300px;
-}
+
 
 section.chat_app{
     width: 800px;
@@ -106,97 +102,76 @@ padding-top: 40px;
     </style>
 </head>
 <body>    
-    <div id="users">
-        <h1>Online users </h1>
-        <div id="addeduser"></div>
-    </div>
     <section class="chat_app">
-    
         <div class="brand">
-            <!-- <img src="" alt="" srcset=""> -->
-            <h1>chat application</h1>
+            <h1>Online Users: <span id="addeduser">0</span></h1>
             <button id="logout">Leave</button>
         </div>
         <div class="msgarea">
-
+            <!-- Your message area content here -->
         </div>
-    <div>
-        <input type="text" id="input" placeholder="enter your massage">
-        
-    </div>
-    
-       </section>
-    <!-- <h1><center>Chatting app</center></h1>
-    <div class="chat">
-        <div id="append"></div>
-        
-    </div>
-    <input type="text" id="input" placeholder="enter your massage"> -->
-    
-</body>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-    const socket=io()
-    const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get('id');
-    let msgarea=document.querySelector(".msgarea")
-    console.log(name)
-    let msg=document.getElementById("input")
-    msg.addEventListener('keyup',(e)=>{
-        if(e.key=="Enter"){
-            sendmsg(e.target.value)
+        <div>
+            <input type="text" id="input" placeholder="enter your message">
+        </div>
+    </section>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('id');
+        let msgarea = document.querySelector(".msgarea");
+        let msg = document.getElementById("input");
+
+        msg.addEventListener('keyup', (e) => {
+            if (e.key == "Enter") {
+                sendmsg(e.target.value);
+            }
+        });
+
+        function sendmsg(message) {
+            let msg = {
+                user: name,
+                message: message.trim()
+            };
+            // Append message
+            appendmsg(msg, "outgoing");
+            msg.value = "";
+            // Send message to server
+            socket.emit("message", msg);
         }
-    })
 
-    function sendmsg(message){
-    let msg={
-        user:name,
-        message:message.trim()
-    }
-    //append massage
-    appendmsg(msg,"outgoing")
-    msg.value=""
-// send msg to server
-    socket.emit("message",msg)
-}
+        function appendmsg(msg, type) {
+            let maindiv = document.createElement("div");
+            let classname = type;
+            maindiv.classList.add(classname, "msg");
+            let markup = `
+            <h4>${msg.user}</h4>
+            <p>${msg.message}</p>
+            `;
+            maindiv.innerHTML = markup;
+            msgarea.appendChild(maindiv);
+        }
 
-function appendmsg(msg,type){
-let maindiv=document.createElement("div")
-let classname=type
-maindiv.classList.add(classname, "msg")
-let markup=`
-<h4>${msg.user}</h4>
-<p>${msg.message}</p>
-`
-maindiv.innerHTML=markup
-msgarea.appendChild(maindiv)
-}
+        // Receive message
+        socket.on("message", (msg) => {
+            appendmsg(msg, "incoming");
+        });
 
-// recive msg
-socket.on("message",(msg)=>{
-    //console.log(msg)
-    appendmsg(msg,"incoming")
-})
+        // Update user list
+        let connectedUsers = [];
 
-//userlist
-let connectedUsers = [];
+        socket.on("users", (users) => {
+            connectedUsers = users;
+            updateUsersList();
+        });
 
-socket.on("users", (users) => {
-      connectedUsers = users;
-      updateUsersList();
-});
+        const updateUsersList = () => {
+            const userListElement = document.getElementById("addeduser");
+            userListElement.innerHTML = connectedUsers.length;
+        };
 
-const updateUsersList = () => {
-      const userListElement = document.getElementById("addeduser");
-      userListElement.innerHTML = "";
-
-      connectedUsers.forEach((user) => {
-        const li = document.createElement("li");
-        li.textContent = user;
-        
-        userListElement.appendChild(li);
-    });
-};
-
-</script>
+        // Emit user join event when the page loads
+        socket.emit("user_join", name);
+    </script>
+</body>
 </html>
