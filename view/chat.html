@@ -16,15 +16,17 @@ body{
     
     gap: 20px;
     min-height: 100vh;
-    background-color: rgb(175, 227, 243);
+    background-color: rgb(3, 24, 117);
 }
 
 
 section.chat_app{
-    width: 800px;
+    width: 700px;
     max-width: 90%;
+    height: 90vh;
     background-color: #9ae2c7;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    
 }
 .brand{
     padding: 20px;
@@ -37,7 +39,7 @@ section.chat_app{
 .brand h1{
     text-transform: uppercase;
     font-size: 20px;
-    color:teal;
+    color:rgb(10, 10, 10);
     margin-left: 10px;
 }
 
@@ -48,6 +50,10 @@ display: flex;
 flex-direction: column;
 overflow-y: auto;
 padding-top: 40px;
+background-image:url("/view/image.png");
+background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 #input{
     width: 100%;
@@ -93,7 +99,7 @@ padding-top: 40px;
 
 #logout{
    color: white;
-   background-color: forestgreen;
+   background-color: #2691d9;
    padding: 10px;
    border-radius: 5px;
    font-weight:bold;
@@ -116,6 +122,11 @@ padding-top: 40px;
     </section>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        let logoutbtn=document.getElementById("logout")
+        logoutbtn.addEventListener("click",()=>{
+            window.location.href="https://groupchating123.netlify.app/"
+        })
+
         const socket = io();
         const urlParams = new URLSearchParams(window.location.search);
         const name = urlParams.get('id');
