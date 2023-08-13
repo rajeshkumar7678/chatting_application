@@ -23,8 +23,8 @@ userroute.post("/register",async(req,res)=>{
         let hesspass=bcrypt.hashSync(password,7)
         let newuser=new usermodel({name,email,password:hesspass})
         await newuser.save()
-        sendingmail(name,email,newuser._id)
-        res.status(200).send({"msg":"register successfull please verify the mail to login"})
+        //sendingmail(name,email,newuser._id)
+        res.status(200).send({"msg":"register successfull please login"})
     } catch (error) {
         res.send(error.massage)
     }
@@ -92,9 +92,9 @@ userroute.post("/login",async (req,res)=>{
         if(!hesppass){
             return res.status(400).send({"msg":"password incorrect"})
         }
-        if(user.isverified==false){
-            return res.status(400).send({"msg":"verify your mail first"})
-        }
+        // if(user.isverified==false){
+        //     return res.status(400).send({"msg":"verify your mail first"})
+        // }
         let token=jwt.sign({id:user._id,name:user.name},"rajesh",{expiresIn:"5hr"})
         let refreshtoken=jwt.sign({id:user._id,name:user.name},"rajesh",{expiresIn:"5hr"})
 
